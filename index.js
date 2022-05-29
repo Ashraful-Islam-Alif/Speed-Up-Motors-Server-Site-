@@ -33,6 +33,7 @@ async function run() {
         await client.connect();
         const toolCollection = client.db('speedUp_Motors').collection('tools');
         const myOrderCollection = client.db('speedUp_Motors').collection('myOrder');
+        const userCollection = client.db('speedUp_Motors').collection('user');
 
         //Auth(JWT)
         app.post('/login', async (req, res) => {
@@ -63,7 +64,31 @@ async function run() {
             const result = await myOrderCollection.insertOne(order);
             res.send(result);
         });
+        app.get('/myOrder', async (req, res) => {
+            const user = req.query.user;
+            const query = { user: user }
+            const order = await myOrderCollection.find(query).toArray();
+            res.send(order);
+        })
+        // app.get('myOrder/:id', verifyJWT, async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: ObjectId(id) }
+        //     const user = await myOrderCollection.findOne(query)
+        //     console.log(user);
+        // })
 
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ result, token });
+        });
 
     }
     finally {
