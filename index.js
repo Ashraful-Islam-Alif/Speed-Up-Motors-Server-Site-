@@ -36,6 +36,7 @@ async function run() {
         const myOrderCollection = client.db('speedUp_Motors').collection('myOrder');
         const paymentCollection = client.db('speedUp_Motors').collection('payment');
         const userCollection = client.db('speedUp_Motors').collection('user');
+        const reviewCollection = client.db('speedUp_Motors').collection('review');
 
         //Auth(JWT)
         app.post('/login', async (req, res) => {
@@ -98,6 +99,39 @@ async function run() {
             const orders = await myOrderCollection.findOne(query)
             res.send(orders);
         })
+        //delete order
+        app.delete('/myOrder/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await myOrderCollection.deleteOne(query);
+            console.log(result);
+            res.send(result);
+
+        })
+        //POST(addOrder)
+        app.post('/addOrder', async (req, res) => {
+            const newProduct = req.body;
+            console.log(newProduct);
+            const result = await reviewCollection.insertOne(newProduct);
+            res.send(result);
+
+        })
+        app.get('/addOrder', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            console.log(decodedEmail);
+            const email = req.query.email;
+            if (email === decodedEmail) {
+                const query = { email };
+                const cursor = reviewCollection.find(query);
+                const products = await cursor.toArray();
+                res.send(products)
+            }
+            else {
+                res.status(403).send({ message: 'forbidden access' })
+            }
+        })
+
+
 
         //Payment method
         app.patch('/myOrder/:id', verifyJWT, async (req, res) => {
