@@ -65,10 +65,11 @@ async function run() {
             res.send(result);
         });
         app.get('/myOrder', verifyJWT, async (req, res) => {
-            const user = req.query.user;
+            const email = req.query.email;
+            console.log(email);
             const decodedEmail = req.decoded.email;
-            if (user === decodedEmail) {
-                const query = { user: user }
+            if (email === decodedEmail) {
+                const query = { email: email }
                 const order = await myOrderCollection.find(query).toArray();
                 res.send(order);
             }
@@ -76,13 +77,26 @@ async function run() {
                 return res.status(403).send({ message: 'forbidden access' });
             }
         })
-        // app.get('myOrder/:id', verifyJWT, async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) }
-        //     const user = await myOrderCollection.findOne(query)
-        //     console.log(user);
-        // })
-        app.get('/user', verifyJWT, async (req, res) => {
+        app.get('/myOrder/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const orders = await myOrderCollection.findOne(query)
+            res.send(orders);
+        })
+        // app.put('/myOrder/:email', async (req, res) => {
+        //     const email = req.params.email;
+        //     const user = req.body;
+        //     const filter = { email: email };
+        //     const options = { upsert: true };
+        //     const updateDoc = {
+        //         $set: user,
+        //     };
+        //     const result = await myOrderCollection.updateOne(filter, updateDoc, options);
+        //     const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+        //     res.send({ result, token });
+        // });
+
+        app.get('/user', async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
         });
