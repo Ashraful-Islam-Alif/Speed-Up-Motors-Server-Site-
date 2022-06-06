@@ -61,7 +61,7 @@ async function run() {
         });
 
 
-        //find all tools items
+        //find all tools item
         app.get('/tool', async (req, res) => {
             const tool = await toolCollection.find().toArray();
             res.send(tool);;
